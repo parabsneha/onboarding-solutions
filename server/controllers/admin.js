@@ -5,6 +5,8 @@ require('../DB/Connection');
 const Employee = require('../models/employee');
 const Mentor = require('../models/mentor');
 const Buddy = require('../models/buddy');
+const Blog = require('../models/blog');
+const Announcement = require('../models/announcement');
 const Supervisor = require('../models/supervisor');
 const generalTask = require('../models/generalTask');
 const employeeTask = require('../models/employeeTask');
@@ -21,9 +23,10 @@ var transporter = nodemailer.createTransport({
 });
 
 exports.AddEmployee = (req, res, next,) => {
+  console.log("add employee function ", req.body);
   let profilePicture = req.body.profilePicture;
-  // console.log("req ", req);
-  console.log("pic url from server ", profilePicture);
+  const roles = ["admin"];
+  const positions = ["supervisor", "Hr"];
 
   const { empFirstName, empLastName, empEmail, empPassword, empConfirmPass, empContactNum, empPosition, empTeam, gender, role } = req.body;
   Employee.findOne({ empEmail: empEmail })
@@ -34,19 +37,20 @@ exports.AddEmployee = (req, res, next,) => {
       const employee = new Employee({ empFirstName, empLastName, empEmail, empPassword, profilePicture, empConfirmPass, empContactNum, empPosition, empTeam, gender, role });
       employee.save()
         .then((employee) => {
-          const employeetask = new employeeTask({ user: employee._id });
-          employeetask.save()
-            .then(() => {
-              generalTask.find()
-                .then((gentask) => {
-                  for (index in gentask) {
-                    console.log("adding to task list", gentask[index]);
-                    employeetask.addToTasksList(gentask[index]);
-                  }
-                  employeetask.save();
-                  console.log("employeetask", employeetask);
-                }).catch(err => console.log(err));
-            }).catch(err => console.log(err));
+          if (!positions.includes(req.body.empPosition) && !roles.includes(req.body.role)) { //if user aint a supervisor or hr then assign them general onboarding tasks
+            console.log("saved data ", employee);
+            const employeetask = new employeeTask({ user: employee._id });
+            employeetask.save()
+              .then(() => {
+                generalTask.find()
+                  .then((gentask) => {
+                    for (index in gentask) {
+                      employeetask.addToTasksList(gentask[index]);
+                    }
+                    employeetask.save();
+                  }).catch(err => console.log(err));
+              }).catch(err => console.log(err));
+          }
           var mailOptions = {
             from: 'par007@chowgules.ac.in',
             to: employee.empEmail,
@@ -65,7 +69,7 @@ exports.AddEmployee = (req, res, next,) => {
           });
         })
         .then(() => {
-          Employee.find({ empTeam: empTeam })
+          Employee.find({ empTeam: empTeam }, { empPosition: empPosition })
             .then((employee) => {
               for (emp in employee) {
                 if (employee[emp].empEmail == empEmail) {
@@ -110,8 +114,9 @@ exports.deleteTask = (req, res, next) => {
   });
 }
 
+     
+
 exports.DeleteEmployee = (req, res, next) => {
-  // const empId = req.body._id;
   const empId = req.params.id;
   console.log(empId);
   Employee.findByIdAndRemove(empId, function (err, docs) {
@@ -121,19 +126,231 @@ exports.DeleteEmployee = (req, res, next) => {
       res.send("error");
     }
     else {
+      employeeTask.findOneAndRemove({user:empId}, function (err, docs) {
+        console.log("docs  ", docs);
+        if (err) {
+          console.log(err)
+          res.send("error");
+        }else{
+          console.log("Deleted from employee task : ", docs);
+          
+        }
+      });
       console.log("Deleted : ", docs);
       res.send(docs);
     }
   });
 }
 
+exports.getSupervisorList = (req, res, next) => {
+  console.log("in get supervisor list function");
+  const empId = req.params.id;
+  const supervisorsList = [];
+  Employee.find((err, docs) => {
+    if (err) {
+      console.log("if error then here");
+      res.send(docs);
+    } else {
+      console.log("in else part");
+      for (i in docs) {
+        console.log("the list", docs);
+        if (docs[i].role != "admin" && docs[i]._id != empId) {
+          supervisorsList.push({
+            supervisorName: docs[i].empFirstName + " " + docs[i].empLastName,
+            supervisorId: docs[i]._id
+          })
+        }
+      }
+      res.status(200).send(supervisorsList);
+    }
+  });
+
+}
+
+exports.getEmployeeSupervisor = (req, res, next) => {
+  const empId = req.params.id;
+  const supervisors = [];
+  Supervisor.find()
+    .populate('supervisor.supervisor_id')
+    .exec((err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        for (i in result) {
+          if (result[i].employee.toString() === empId.toString()) {
+            for (j in result[i].supervisor) {
+              supervisors.push({
+                supervisor: result[i].supervisor[j].supervisor_id.empFirstName + " " + result[i].supervisor[j].supervisor_id.empLastName,
+                supervisor_id: result[i].supervisor[j].supervisor_id._id,
+                date: moment(result[i].supervisor[j].date).format("DD-MM-YYYY")
+              })
+            }
+          }
+        }
+        res.status(200).send(supervisors);
+      }
+    });
+};
+
+exports.makeAnnouncement = (req, res, next) => {
+  description = req.body.description;
+  const announcement = new Announcement({ description });
+  announcement.save()
+    .then((result) => {
+      console.log("result", result);
+      return res.send(result);
+    })
+    .catch(err => { });
+}
+
+exports.fetchAnnouncement = (req, res, next) => {
+  const currentPage = req.body.currentPage;
+  const pageSize = req.body.pageSize;
+  const skip = pageSize * (currentPage - 1);
+  const limit = pageSize;
+  const announcement = [];
+  Announcement.find({})
+    .skip(skip).limit(limit)
+    .exec((err, result) => {
+      if (err) {
+        res.send(err)
+      } else {
+        for (i in result) {
+          announcement.push({
+            _id: result[i]._id,
+            description: result[i].description,
+            date: moment(result[i].date).format("MMMM-Do-YYYY")
+          });
+        }
+        res.send(announcement);
+      }
+    });
+}
+
+exports.createBlog = (req, res, next) => {
+  description = req.body.description;
+  content = req.body.content;
+  likes = 0;
+  const blog = new Blog({ description, content, likes });
+  blog.save()
+    .then((result) => {
+      console.log("result", result);
+      return res.send(result);
+    })
+    .catch(err => { });
+}
+
+exports.fetchBlog = (req, res, next) => {
+  const currentPage = req.body.currentPage;
+  const pageSize = req.body.pageSize;
+  const skip = pageSize * (currentPage - 1);
+  const limit = pageSize;
+  const blog = [];
+
+  Blog.find({})
+    .skip(skip).limit(limit)
+    .exec((err, result) => {
+      if (err) {
+        res.send(err)
+      } else {
+        for (i in result) {
+          blog.push({
+            _id: result[i]._id,
+            description: result[i].description,
+            content: result[i].content,
+            likes: result[i].likes,
+            postedAt: moment(result[i].updatedAt).format("MMMM-Do-YYYY")
+          });
+        }
+      }
+      res.send(blog);
+    });
+}
+
+exports.getEmployeeBuddy = (req, res, next) => {
+  const empId = req.params.id;
+  const buddies = [];
+  Buddy.find()
+    .populate('buddy.buddy_id')
+    .exec((err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        for (i in result) {
+          if (result[i].employee.toString() === empId.toString()) {
+            for (j in result[i].buddy) {
+              buddies.push({
+                buddy: result[i].buddy[j].buddy_id.empFirstName + " " + result[i].buddy[j].buddy_id.empLastName,
+                buddy_id: result[i].buddy[j].buddy_id._id,
+                date: moment(result[i].buddy[j].date).format("DD-MM-YYYY")
+              })
+            }
+          }
+        }
+        res.status(200).send(buddies);
+      }
+    });
+};
+
+exports.getEmployeeMentor = (req, res, next) => {
+  const empId = req.params.id;
+  const mentors = [];
+  Mentor.find()
+    .populate('mentor.mentor_id')
+    .exec((err, result) => {
+      if (err) {
+        res.send(err);
+      } else {
+        for (i in result) {
+          if (result[i].employee.toString() === empId.toString()) {
+            for (j in result[i].mentor) {
+              mentors.push({
+              
+                mentor: result[i].mentor[j].mentor_id.empFirstName + " " + result[i].mentor[j].mentor_id.empLastName,
+                mentor_id: result[i].mentor[j].mentor_id._id,
+                date: moment(result[i].mentor[j].date).format("DD-MM-YYYY")
+              })
+            }
+          }
+        }
+        console.log(mentors);
+        res.status(200).send(mentors);
+      }
+    });
+}
+
+exports.noOfEmployees = (req, res, next) => {
+  const count = [];
+  Employee.countDocuments({ role: 'employee' }, function (err, c) {
+    console.log('Count is ' + c);
+    count.push(c);
+    res.send(count);
+  });
+}
+
+exports.noOfTasks = (req, res, next) => {
+  var count;
+  generalTask.countDocuments(function (err, c) {
+    console.log('Count is ' + c);
+    count = c;
+    res.send(count);
+  });
+}
+
 exports.getAllTasks = (req, res, next) => {
+  const currentPage = req.body.currentPage;
+  const pageSize = req.body.pageSize;
+  const skip = pageSize * (currentPage - 1);
+  const limit = pageSize;
   const taskDetails = [];
   generalTask.find()
-    .then(result => {
-      if (!result) {
+    .skip(skip).limit(limit)
+    .populate('personResponsible')
+    .exec((err, result) => {
+      if (err) {
         return res.status(204).send("nothing to fetch");
       }
+      console.log("result ", result);
       for (i in result) {
         taskDetails.push({
           _id: result[i]._id,
@@ -148,31 +365,81 @@ exports.getAllTasks = (req, res, next) => {
       }
       console.log(taskDetails);
       res.send(taskDetails);
-    })
-    .catch(err => res.status(500).send(err));
-};
+    });
+  // .catch(err => res.status(500).send(err));
+}
 
-// exports.getAllTasks = (req, res, next) => {
-//   generalTask.find()
-//   .then(result => {
-//     if (!result) {
-//       return res.status(204).send("nothing to fetch");
-//     }
-//     console.log(result);
-//     res.send(result);
-//   })
-//   .catch(err => res.status(500).send(err));
-// };
+exports.getPersonResponsible = (req, res, next) => {
+  const positions = ["supervisor", "Hr"];
+  const employeeList = [];
+  Employee.find((err, result) => {
+    if (err) {
+      console.log("if error then here");
+      res.send(result);
+    }
+    console.log("results", result);
+    for (i in result) {
+      if (positions.includes(result[i].empPosition)) {
+        employeeList.push({
+          employeeName: result[i].empFirstName + " " + result[i].empLastName,
+          employeeId: result[i]._id
+        });
+      }
+    }
+    console.log(employeeList);
+    res.send(employeeList);
+  });
+  // .catch(err => res.status(500).send(err));
+}
+
+
 
 exports.getAllEmployee = (req, res, next) => {
-  Employee.find((err, docs) => {
+
+  const currentPage = req.body.currentPage;
+  const pageSize = req.body.pageSize;
+  const skip = pageSize * (currentPage - 1);
+  const limit = pageSize;
+  const employee = [];
+  Employee.find({}).skip(skip).limit(limit).exec((err, docs) => {
     if (!err) {
-      res.send(docs);
+      for(i in docs){
+      employee.push({
+        _id:docs[i]._id,
+      empFirstName: docs[i].empFirstName,
+      empLastName:docs[i].empLastName,
+      empTeam:docs[i].empTeam,
+      empEmail:docs[i].empEmail,
+      empPosition:docs[i].empPosition,
+      empContactNum:docs[i].empContactNum,
+      gender:docs[i].gender,
+      role:docs[i].role,
+      profilePicture:docs[i].profilePicture,
+
+      });
+    }
+      res.send(employee);
     } else {
       console.log('Failed to retrieve the employee List: ' + err);
+      res.send(err);
     }
   });
+
+  // const currentPage = req.body.currentPage;
+  // const pageSize = req.body.pageSize;
+  // const skip = pageSize * (currentPage - 1);
+  // const limit = pageSize;
+  // Employee.find({}).skip(skip).limit(limit).exec((err, docs) => {
+  //   if (!err) {
+  //     res.send(docs);
+  //   } else {
+  //     console.log('Failed to retrieve the employee List: ' + err);
+  //     res.send(err);
+  //   }
+  // });
+
 };
+
 //get hr for person responsible dropdown
 exports.getEmployee = (req, res, next) => {
   // const position = "Hr";
@@ -229,7 +496,7 @@ exports.updateEmployee = (req, res, next) => {
       res.status(500).json({ error: "failed to update" });
     });
 };
-//populate doesnt work
+
 exports.getTaskById = (req, res, next) => {
   const taskid = req.params.id;
   console.log("task id", taskid);
@@ -242,11 +509,43 @@ exports.getTaskById = (req, res, next) => {
     .catch(err => {
       console.log(err);
     });
-};
+}
+
+// exports.getTaskById = (req, res, next) => {
+
+//   const taskDetails = [];
+//   const taskid = req.params.id;
+//     console.log("task id", taskid);
+//     generalTask.findById(taskid)
+//     .populate('personResponsible')
+//     .exec((err, result) => {
+//       if (err) {
+//         return res.status(204).send("nothing to fetch");
+//       }
+//       // console.log(taskDetails);
+//       res.send(result);
+//     });
+// };
+
+
+// exports.getTaskById = (req, res, next) => {
+//   const taskid = req.params.id;
+//   console.log("task id", taskid);
+//   generalTask.findById(taskid)
+//     // .populate('personResponsible','empFirstName')
+//     .then(result => {
+//       console.log(result);
+//       res.send(result);
+//     })
+//     .catch(err => {
+//       console.log(err);
+//     });
+// };
+
 
 exports.getEmployeeById = (req, res, next) => {
   const empid = req.params.id;
-  // console.log(empid);
+  console.log(empid);
   Employee.findById(empid)
     .then(employee => {
       console.log(employee);
@@ -258,24 +557,28 @@ exports.getEmployeeById = (req, res, next) => {
 };
 
 exports.assignSupervisor = (req, res, next) => {
-  Supervisor.findOne({ employee: req.body.empId })
-    .then(result => {
-      if (result) {
-        result.addToSupervisorList(req.body.supervisorId);
-        return res.send(result);
-      }
-      else {
-        const supervisor = new Supervisor({ employee: req.body.empId });
-        console.log(supervisor);
-        supervisor.save()
-          .then((result) => {
-            console.log("result", result);
-            result.addToSupervisorList(req.body.supervisorId);
-            return res.send(result);
-          })
-          .catch(err => res.send(err));
-      }
-    }).catch(err => console.log(err));
+  console.log(req.body.supervisorId);
+  if (req.body.supervisorId != null) {
+    Supervisor.findOne({ employee: req.body.empId })
+      .then(result => {
+        if (result) {
+          result.addToSupervisorList(req.body.supervisorId);
+          return res.send(result);
+        }
+        else {
+          const supervisor = new Supervisor({ employee: req.body.empId });
+          supervisor.save()
+            .then((result) => {
+              result.addToSupervisorList(req.body.supervisorId);
+              return res.send(result);
+            })
+            .catch(err => { });
+        }
+      }).catch(err => { });
+  }
+  else {
+    console.log("supervisor undefined");
+  }
 
 };
 
@@ -370,64 +673,30 @@ exports.deleteMentor = (req, res, next) => {
   });
 };
 
-//-------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-// exports.postAddHr = (req, res, next) => {
-
-//   const { firstName, lastName, email, password, confirmPass, contactNum, gender } = req.body;
-//   Hr.findOne({ email: email })
-//     .then((userExist) => {
-//       console.log('inside then');
-//       if (userExist) {
-//         return res.status(422).json({ error: 'Email already exists' });
-//       }
-//       const hr = new Hr({ firstName, lastName, email, password, confirmPass, contactNum, gender });
-//       console.log(hr);
-//       hr.save()
-//         .then((hr) => {
-//           var mailOptions = {
-//             from: 'par007@chowgules.ac.in',
-//             to: hr.email,
-//             subject: 'Sign up success!',
-//             text: "Hi " + hr.firstName + " you have been successfully registered. Below are your credentials to log in to our system. " +
-//               "username: "
-//               + hr.email +
-//               " password: " + password + " "
-//           };
-//           transporter.sendMail(mailOptions, function (error, info) {
-//             if (error) {
-//               console.log(error);
-//             } else {
-//               console.log('email sent:' + info.response);
-//             }
-//           });
-//           res.status(201).json({ message: "user successfully registered" });
-//         })
-//         .catch(err => res.send(err.message));
-//     }).catch((err) => { console.log(err) });
-
-// };
 
 exports.updateTask = (req, res, next) => {
   const id = req.params.id;
-  const date = new Date();
+  // const date = new Date();
+  const date = req.body.date;
   const type = req.body.type;
   const topic = req.body.topic;
   const objective = req.body.objective;
   const category = req.body.category;
-  const personResponsible = req.body.personResponsible;
+  // const personResponsible = req.body.personResponsible;
+  // console.log("personResponsible",personResponsible);
   const estimatedTime = req.body.estimatedTime;
   generalTask.findById(id)
     .then((result) => {
       if (result._id == id) {
         result.type = type;
+        // result.date = date;
         result.topic = topic;
         result.objective = objective;
         result.category = category;
-        result.personResponsible = personResponsible;
+        // result.personResponsible = personResponsible;
         result.estimatedTime = estimatedTime;
       } else {
-        res.status(403).send("cant process the request");
+        return res.status(403).send("cant process the request");
       }
       result.save();
       res.status(200).send(result);
@@ -470,13 +739,14 @@ exports.updateTask = (req, res, next) => {
 
 exports.addGenTask = (req, res, next) => {
 
+  const date = req.body.date;
   // const date = new Date();
-  const date = new Date();
+  console.log("date",date);
   const type = req.body.type;
   const topic = req.body.topic;
   const objective = req.body.objective;
   const category = req.body.category;
-  const personResponsible = req.body.personResponsible;
+  const personResponsible = (req.body.personResponsible) ? req.body.personResponsible : " ";
   const estimatedTime = req.body.estimatedTime;
   const genTask = new generalTask({ date, type, topic, objective, category, personResponsible, estimatedTime });
   genTask.save()
@@ -486,30 +756,3 @@ exports.addGenTask = (req, res, next) => {
     .catch(err => console.log(err));
 };
 
-// exports.getUserByTask = (req, res, next) => {
-//   const _id = req.body._id;
-//   generalTask.findById({ _id: _id })
-//     .populate('assignedBy')
-//     // .exec(function (generalTask) {
-//     .then((result) => {
-//       res.send(result.assignedBy.firstName + result.assignedBy.lastName);
-
-//     }).catch(err => console.log(err));
-// };
-
-// exports.getempByTask = (req, res, next) => {
-//   const _id = req.body._id;
-//   generalTask.findById({ _id: _id })
-//     .populate('assignedBy', 'empFirstName')
-//     // .exec(function (generalTask) {
-//     .then((result) => {
-//       res.send(result.assignedBy.empFirstName);
-
-//     }).catch(err => console.log(err));
-// };
-
-// -------------------------------
-
-// module.exports ={
-//   userAuth
-// }

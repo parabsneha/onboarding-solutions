@@ -1,8 +1,11 @@
 import React from 'react'
 
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
-const Colors = React.lazy(() => import('./views/theme/colors/Colors'))
-const Typography = React.lazy(() => import('./views/theme/typography/Typography'))
+const DashboardEmp = React.lazy(() => import('./views/dashboard/DashboardEmp'))
+const DashboardSup = React.lazy(() => import('./views/dashboard/DashboardSup'))
+const Users = React.lazy(() => import('./views/theme/colors/Colors'))
+const AddUser = React.lazy(() => import('./views/theme/typography/Typography'))
+
 
 // Base
 const Accordion = React.lazy(() => import('./views/base/accordion/Accordion'))
@@ -37,6 +40,7 @@ const Validation = React.lazy(() => import('./views/forms/validation/Validation'
 
 const Charts = React.lazy(() => import('./views/charts/Charts'))
 
+
 // Icons
 const CoreUIIcons = React.lazy(() => import('./views/icons/coreui-icons/CoreUIIcons'))
 const Flags = React.lazy(() => import('./views/icons/flags/Flags'))
@@ -50,19 +54,30 @@ const Toasts = React.lazy(() => import('./views/notifications/toasts/Toasts'))
 
 const Widgets = React.lazy(() => import('./views/widgets/Widgets'))
 const ViewData = React.lazy(() => import('./views/ViewData/ViewData'))
+const ViewDataAdmin = React.lazy(() => import('./views/ViewData/ViewDataAdmin'))
 const ViewAllTasks = React.lazy(() => import('./views/Task/ViewAllTasks'))
 const ViewTask = React.lazy(() => import('./views/Task/ViewTask'))
 const AddTask = React.lazy(() => import('./views/Task/AddTask'))
-const MyTeam =  React.lazy(() => import('./views/MyTeam/Info'))
-const ViewAllBlogs = React.lazy(() => import('./views/Blogs/ViewAllBlogs'))
+const MyTeam =  React.lazy(() => import('./views/MyTeam/MyTeam'))
+const AddBlog = React.lazy(() => import('./views/Blogs/AddBlog'))
 const MyTasks = React.lazy(() => import('./views/MyTask/MyTasks'))
+const Employees = React.lazy(() => import('./views/theme/colors/Employees'))
+const SupTasksList = React.lazy(() => import('./views/Task/SupTasksList'))
+const AddSupTasks = React.lazy(() => import('./views/Task/AddSupTasks'))
+const ViewDataSup = React.lazy(() => import('./views/ViewData/ViewDataSup'))
+const ViewEmpTask = React.lazy(() => import('./views/Task/ViewEmpTask'))
+const ViewMyTask = React.lazy(() => import('./views/MyTask/ViewMyTask'))
+const allAnnouncements = React.lazy(() => import('./views/allAnnouncements'))
+const ViewTaskAdmin = React.lazy(() => import('./views/Task/ViewTaskAdmin'))
+
 const routes = [
   { path: '/dashboard', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
-  { path: '/theme', name: 'Theme', element: Colors, exact: true },
-  // { path: '/task', name: 'Task', element: ViewTasks, exact: true },
-  { path: '/theme/colors', name: 'Colors', element: Colors },
-  { path: '/theme/typography', name: 'Typography', element: Typography },
+  { path: '/dashboardEmp', name: 'Employee Dashboard', element: DashboardEmp },
+  { path: '/dashboardSup', name: 'Employee Dashboard', element: DashboardSup },
+  { path: '/allUsers', name: 'Users', element: Users, exact: true },
+  { path: '/allUsers/user', name: 'All Users', element: Users },
+  { path: '/theme/typography', name: 'Add User', element: AddUser },
   { path: '/base', name: 'Base', element: Cards, exact: true },
   { path: '/base/accordion', name: 'Accordion', element: Accordion },
   { path: '/base/breadcrumbs', name: 'Breadcrumbs', element: Breadcrumbs },
@@ -103,13 +118,22 @@ const routes = [
   { path: '/notifications/toasts', name: 'Toasts', element: Toasts },
   { path: '/widgets', name: 'Widgets', element: Widgets },
   { path: '/theme/ViewData/:id', name: 'User data', element: ViewData },
+  { path: '/allUsers/ViewDataAdmin/:id', name: 'User data', element: ViewDataAdmin },
   { path: '/task/viewAllTask', name: 'View Task', element: ViewAllTasks },
   { path: '/task/ViewTask/:id', name: 'Task info', element: ViewTask },
   { path: '/task/AddTask', name: 'Add Task', element: AddTask },
   { path: '/myTeam', name: 'My team', element: MyTeam },
-  { path: '/ViewAllBLogs', name: 'Blogs', element: ViewAllBlogs },
-  { path: '/MyTasks', name: 'My Tasks', element: MyTasks } 
-  
+  { path: '/AddBlog', name: 'Blogs', element: AddBlog },
+  { path: '/MyTasks', name: 'My Tasks', element: MyTasks }, 
+  { path: '/theme/Employees', name: 'Employees', element: Employees },
+  { path: '/task/SupTasksList', name: 'SupTasksList', element: SupTasksList },
+  { path: '/task/AddSupTasks', name: 'AddSupTaskssk', element: AddSupTasks },
+  { path: '/task/ViewDataSup/:id', name: 'User task', element: ViewDataSup },
+  { path: '/task/ViewEmpTask/:id/:userId', name: 'Employee Task', element: ViewEmpTask },
+  { path: '/task/ViewMyTask/:id', name: 'My Task', element: ViewMyTask },
+  { path: '/allAnnouncements', name: 'All announcement', element: allAnnouncements },
+  { path: '/task/ViewTaskAdmin/:id', name: 'View Task', element: ViewTaskAdmin }
+
 ]
 
 

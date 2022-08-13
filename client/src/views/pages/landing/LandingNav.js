@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import { Button } from './Button';
 import { Link } from 'react-router-dom';
 import './LandingNav.css';
+import jwt_decode from "jwt-decode";
 
 function LandingNav() {
   const [click, setClick] = useState(false);
@@ -18,8 +19,21 @@ function LandingNav() {
     }
   };
 
-
+const [userName, setUserName] = useState();
+const [isLoggedIn, setIsLoggedIn] = useState(false);
   useEffect(() => {
+   
+      console.log("useEffect working");
+      var token = localStorage.getItem("token");
+      if(token){
+        var decoded = jwt_decode(token);
+        console.log("token decoded == ", decoded);
+        if(decoded.user_name){
+          setUserName(decoded.user_name);
+          setIsLoggedIn(true);
+        }
+      }
+   
     showButton();
   }, []);
 
@@ -37,21 +51,9 @@ function LandingNav() {
             <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
           </div>
           <ul className={click ? 'nav-menu active' : 'nav-menu'}>
+           
             <li className='nav-item'>
-              {/* <Link to='/dashboard' className='nav-links' onClick={closeMobileMenu}>
-                Home
-              </Link> */}
-            </li>
-
-            <li className='nav-item'>
-              <Link to='/' className='nav-links' onClick={closeMobileMenu}>
-                Contact
-              </Link>
-            </li>
-
-
-            <li className='nav-item'>
-              <Link to='/' className='nav-links' onClick={closeMobileMenu}>
+              <Link to='/blogs' className='nav-links' onClick={closeMobileMenu}>
                 Blogs
               </Link>
             </li>
@@ -61,7 +63,10 @@ function LandingNav() {
                 className='nav-links'
                 onClick={closeMobileMenu}
               >
-                Login
+                {/* Login */}
+                {
+                  isLoggedIn ? userName : <p>Login</p>
+                }
               </Link>
             </li>
           </ul>

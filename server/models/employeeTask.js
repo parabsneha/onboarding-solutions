@@ -32,12 +32,15 @@ const employeetaskSchema = new mongoose.Schema({
         },
         sessionRating: { //employee for session
             type: Number,
+            default:null,
         },
         sessionFeedbackComments: { //employee for session
             type: String,
+            default:null,
         },
         supervisorFeedbackComments: { //not for sessions 
-            type: String
+            type: String,
+            default:null,
         },
         estimatedTime: { 
             type: String
@@ -72,10 +75,10 @@ employeetaskSchema.methods.addToTasksList = function (task) {
             category: task.category,
             personResponsible:task.personResponsible,
             status: defaultStatus,
-            feedbackComments: null,
-            feedbackRating:null,
+            sessionRating: null,
+            sessionFeedbackComments:null,
             estimatedTime: task.estimatedTime,
-            summaryComments: null
+            supervisorFeedbackComments: null
         });
         this.task = updatedTasklist;
         // return this.save();

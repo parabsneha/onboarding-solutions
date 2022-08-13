@@ -18,11 +18,8 @@ const generaltaskSchema = new mongoose.Schema({
         type:String //hr or admin or IT .
     },
     personResponsible:{ 
-        type: String
+        type: mongoose.Schema.Types.ObjectId, ref: 'Employee'
     },
-    // personResponsible:{ 
-    //     type: mongoose.Schema.Types.ObjectId, refPath: 'category'
-    // },
     estimatedTime:{
         type:String
     }

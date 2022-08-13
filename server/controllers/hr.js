@@ -4,6 +4,7 @@ const Hr = require('../models/Hr');
 const nodemailer = require('nodemailer');
 const generalTask = require('../models/generalTask');
 const employeeTask = require('../models/employeeTask');
+const moment = require('moment');
 
 var transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -64,31 +65,97 @@ exports.myTasks = (req, res, next) => {
     res.status(200).json(task);
   }).catch(err => console.log(err));
 }
-
+//for personResponsible and Supervisor
 exports.getEditTaskForUser = (req, res, next) => {
   console.log("person res ",req.user._id);
   console.log("user ", req.body.user_id);
   employeeTask.findOne({user:req.body.user_id})
   .then((employeeTask) => {
+    console.log("user = ", employeeTask);
     const taskDetails = [];
     for (i in employeeTask.task){
       if(employeeTask.task[i].personResponsible.toString() == req.user._id.toString()){
-        console.log("task = ",employeeTask.task[i].task_id);
-      taskDetails.push({
-        task_id: employeeTask.task[i].task_id,
-        topic: employeeTask.task[i].topic,
-        objective: employeeTask.task[i].objective,
-        status: employeeTask.task[i].status,
-        date: employeeTask.task[i].date,
-        personResponsible: employeeTask.task[i].personResponsible,
-        sessionRating: employeeTask.task[i].sessionRating,
-        sessionFeedbackComments: employeeTask.task[i].sessionFeedbackComments,
-        estimatedTime: employeeTask.task[i].estimatedTime,
-        supervisorFeedbackComments: employeeTask.task[i].supervisorFeedbackComments
-      });
+      console.log("task = ",employeeTask.task[i].task_id);
+      if(employeeTask.task[i].type == "session"){
+        taskDetails.push({
+          user_id : req.body.user_id,
+          task_id: employeeTask.task[i].task_id,
+          type: employeeTask.task[i].type,
+          category: employeeTask.task[i].category,
+          topic: employeeTask.task[i].topic,
+          objective: employeeTask.task[i].objective,
+          status: employeeTask.task[i].status,
+          date: moment(employeeTask.task[i].date).format("DD-MM-YYYY"),
+          personResponsible: employeeTask.task[i].personResponsible,
+          sessionRating: employeeTask.task[i].sessionRating,
+          sessionFeedbackComments: employeeTask.task[i].sessionFeedbackComments,
+          estimatedTime: employeeTask.task[i].estimatedTime,
+          // supervisorFeedbackComments: employeeTask.task[i].supervisorFeedbackComments
+        });
+      }else{
+        taskDetails.push({
+          user_id : req.body.user_id,
+          task_id: employeeTask.task[i].task_id,
+          type: employeeTask.task[i].type,
+          category: employeeTask.task[i].category,
+          topic: employeeTask.task[i].topic,
+          objective: employeeTask.task[i].objective,
+          status: employeeTask.task[i].status,
+          date: moment(employeeTask.task[i].date).format("ddd MM DD YYYY"),
+          personResponsible: employeeTask.task[i].personResponsible,
+          estimatedTime: employeeTask.task[i].estimatedTime,
+          supervisorFeedbackComments: employeeTask.task[i].supervisorFeedbackComments
+        });
+      }
     }
   }
-    res.json({message: taskDetails});
+    res.send(taskDetails);
+  })
+  .catch(err => console.log(err));
+};
+
+//view user task by task id ---for person responsible
+exports.viewUserTask = (req, res, next) => {
+  console.log("task ",req.body.task_id);
+  console.log("user ", req.body.user_id);
+  employeeTask.findOne({user:req.body.user_id})
+  .then((employeeTask) => {
+    // console.log("user = ", employeeTask);
+    const taskDetails = [];
+    for (i in employeeTask.task){
+      if(employeeTask.task[i].task_id.toString() == req.body.task_id.toString()){
+      console.log("task = ",employeeTask.task[i].task_id);
+      if(employeeTask.task[i].type == "session"){
+        taskDetails.push({
+          task_id: employeeTask.task[i].task_id,
+          type: employeeTask.task[i].type,
+          category: employeeTask.task[i].category,
+          topic: employeeTask.task[i].topic,
+          objective: employeeTask.task[i].objective,
+          status: employeeTask.task[i].status,
+          date: moment(employeeTask.task[i].date).format("DD-MM-YYYY"),
+          personResponsible: employeeTask.task[i].personResponsible,
+          sessionRating: employeeTask.task[i].sessionRating,
+          sessionFeedbackComments: employeeTask.task[i].sessionFeedbackComments,
+          estimatedTime: employeeTask.task[i].estimatedTime,
+        });
+      }else{
+        taskDetails.push({
+          task_id: employeeTask.task[i].task_id,
+          type: employeeTask.task[i].type,
+          category: employeeTask.task[i].category,
+          topic: employeeTask.task[i].topic,
+          objective: employeeTask.task[i].objective,
+          status: employeeTask.task[i].status,
+          date: moment(employeeTask.task[i].date).format("ddd MM DD YYYY"),
+          personResponsible: employeeTask.task[i].personResponsible,
+          estimatedTime: employeeTask.task[i].estimatedTime,
+          supervisorFeedbackComments: employeeTask.task[i].supervisorFeedbackComments
+        });
+      }
+    }
+  }
+    res.send(taskDetails);
   })
   .catch(err => console.log(err));
 };

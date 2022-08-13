@@ -9,7 +9,7 @@ function LandingCont() {
       {/* <video src='/videos/video-1.mp4' autoPlay loop muted /> */}
       <h1>OPPORTUNITY AWAITS</h1>
       <p>Gain from our perspective</p>
-      <div className='hero-btns'>
+      {/* <div className='hero-btns'>
         <Button
           className='btns'
           buttonStyle='btn--outline'
@@ -26,7 +26,7 @@ function LandingCont() {
         >
           BLOG <i className='far fa-play-circle' />
         </Button>
-      </div>
+      </div> */}
     </div>
   );
 }

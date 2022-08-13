@@ -1,12 +1,12 @@
-import PropTypes from 'prop-types'
 import React, { useEffect, useState, createRef } from 'react'
-import classNames from 'classnames'
 import "./task.css";
 import {Link} from 'react-router-dom'
+import {FaEye, FaTasks, FaList} from 'react-icons/fa'
 import {
   CCard,
   CCardBody,
   CCardHeader,
+  CTooltip,
   CCol,
   CRow,
   CTable,
@@ -19,16 +19,28 @@ import {
   CButton
 
 } from '@coreui/react'
-
+import {
+  cilPencil,
+  cilTrash,
+  cilCommentSquare,
+  cilEnvelopeOpen,
+  cilFile,
+  cilLockLocked,
+  cilSettings,
+  cilTask,
+  cilUser,
+} from '@coreui/icons'
+import CIcon from '@coreui/icons-react'
 import jwt_decode from "jwt-decode";
 import axios from "axios";
+import ReactPaginate from 'react-paginate';
 
 
 const ViewAllTasks = () => {
 
   const [tasks, setTasks] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   
-    // console.log("in dashboard 2");
     let token_task;
     var employee;
     var token;
@@ -38,37 +50,82 @@ const ViewAllTasks = () => {
       if(token){
         var decoded = jwt_decode(token);
         token_task = decoded.task_id;
-        // console.log("token id == ", token_task);
       }
-  
+      const data = {
+        "currentPage" : currentPage,
+        "pageSize":4
+    }
+        
       var config = {
         method: 'post',
         url: 'http://localhost:3003/admin/getAllTasks',
         headers: { 
           'Authorization': `${token}`
-        }
+        },
+        data:data
       };
       
       axios(config)
       .then(function (response) {
-        setTasks(response.data);
-        employee = response.data;
+        setTasks(response.data.reverse());
+        employee = response;
         console.log("= ", employee);
       })
       .catch(function (error) {
-        console.log(error);
+        console.log(error.response.data);
+        const errorMsg = error.response.data;
+        alert(" " + errorMsg);
       });
       
-    },[]);
+    },[currentPage]);
+
+    const handlePageClick = (event) => {
+      // const newOffset = (event.selected * itemsPerPage) % items.length;
+      // console.log(
+      //   `User requested page number ${event.selected}, which is offset ${newOffset}`
+      // );
+      // setItemOffset(newOffset);
+      console.log("selected ", event.selected + 1);
+      setCurrentPage(event.selected + 1);
+    };
 
 	  const handleDelete = async (id) => {
-
-      if((window.confirm("Delete the item?"))){
-      await axios.post(`http://localhost:3003/admin/delete-employee/${id}`);
-      await alert("task deleted ", id);
-      await window.location.reload();
-      }
+      token = localStorage.getItem("token");
+      // if((window.confirm("Delete the item?"))){
+      // await axios.post(`http://localhost:3003/admin/deleteTask/${id}`);
+      // await alert("task deleted ", id);
+      // await window.location.reload();
+      // }
       
+      if((window.confirm("Delete the item?"))){
+        // await axios.post(`http://localhost:3003/admin/deleteTask/${id}`);
+        // await alert("task deleted ", id);
+        // await window.location.reload();
+
+        var config = {
+          method: 'post',
+          url: `http://localhost:3003/admin/deleteTask/${id}`,
+          headers: { 
+            'Authorization': `${token}`
+          }
+         
+        };
+        
+        axios(config)
+        .then(function (response) {
+           alert("task deleted ", id);
+           console.log("delete res ",response.data)
+          window.location.reload();
+         
+        })
+        .catch(function (error) {
+          console.log(error.response.data);
+          const errorMsg = error.response.data;
+          alert(" " + errorMsg);
+        });
+        }
+        
+
     };
   return (
     <>
@@ -82,61 +139,81 @@ const ViewAllTasks = () => {
         <CCard className="mb-4">
           <CCardBody>
           <Link to="/task/AddTask" style={{ textDecoration: "none" }} className="viewButton">
-          <CButton color="secondary" style={{ float: "right" }}>Add task</CButton>
+          <CButton color="secondary" style={{ float: "right" }}><FaTasks/>  Add</CButton>
           </Link>
               <CTable striped>
                 <CTableHead>
                   <CTableRow>
-                    <CTableHeaderCell scope="col" colSpan="2">#</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" colSpan="2">Topic</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" colSpan="2">Objective</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" colSpan="2">Type</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" colSpan="2">Category</CTableHeaderCell>
-                    <CTableHeaderCell scope="col" colSpan="2" >Date</CTableHeaderCell>
+                    <CTableHeaderCell scope="col" colSpan="1">#</CTableHeaderCell>
+                    <CTableHeaderCell scope="col" colSpan="1">Topic</CTableHeaderCell>
+                    <CTableHeaderCell scope="col" colSpan="3">Objective</CTableHeaderCell>
+                    <CTableHeaderCell scope="col" colSpan="1">Type</CTableHeaderCell>
+                    {/* <CTableHeaderCell scope="col" colSpan="1">Person Responsible</CTableHeaderCell> */}
                     <CTableHeaderCell scope="col" colSpan="2" style={{ textAlign: 'center' }}>Action</CTableHeaderCell>
                   </CTableRow>
                 </CTableHead>
                 <CTableBody>
                 {tasks.map((task, index) => (
                   <CTableRow>
-                    <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
-                    <CTableDataCell colSpan="2">{task.topic}</CTableDataCell>
-                    <CTableDataCell colSpan="2">{task.objective}</CTableDataCell>
-                    <CTableDataCell colSpan="2">{task.type}</CTableDataCell>
-                    <CTableDataCell colSpan="2">{task.category}</CTableDataCell>
-                    <CTableDataCell colSpan="2">{task.date}</CTableDataCell>
+                    <CTableHeaderCell scope="row" colSpan="1">{index + 1}</CTableHeaderCell>
+                    <CTableDataCell colSpan="1">{task.topic}</CTableDataCell>
+                    <CTableDataCell colSpan="3" style={{textOverflow:"ellipses"}}>{task.objective}</CTableDataCell>
+                    <CTableDataCell colSpan="1">{task.type}</CTableDataCell>
+                    
+                    {/* <CTableDataCell colSpan="2">{task.personResponsible.empFirstName} {task.personResponsible.empLastName}</CTableDataCell> */}
                     <CTableDataCell colSpan="2" className="cellAction">
 
                       <div className="cellAction">
-                     
-                      {/* to={`/theme/ViewData/${task._id}`} */}
-                      {/* to="/theme/ViewData"  */}
-                      <Link to={`/task/ViewTask/${task._id}`} style={{ textDecoration: "none" }} className="viewButton">
+
+                      <Link to={`/task/ViewTaskAdmin/${task._id}`} style={{ textDecoration: "none" }} className="viewButton">
+                      <CTooltip
+                         content="View"
+                          placement="top"
+                      >
                       <CButton 
-                      color="dark"
-                      // variant="ghost"
-                      className="viewButton">View  </CButton>
+                      color="none"
+                      className="viewButton"><FaEye/>  </CButton>
+                      </CTooltip>
                         </Link>
+                        <CTooltip
+                         content="Delete"
+                          placement="top"
+                      >
                         <CButton
-                        // variant="ghost"
-                          color="danger"
+                          color="none"
                           className="deleteButton"
                           onClick={() => handleDelete(task._id)}
                         >
-                          Delete
+                          <CIcon icon={cilTrash} className="me-2" />
                         </CButton>
+                        </CTooltip>
                       </div>
 
                     </CTableDataCell>
                   </CTableRow>
                  ))}
-                  {/* <CTableRow>
-                    <CTableHeaderCell scope="row">3</CTableHeaderCell>
-                    <CTableDataCell colSpan="2">Larry the Bird</CTableDataCell>
-                    <CTableDataCell>@twitter</CTableDataCell>
-                  </CTableRow> */}
+                 
                 </CTableBody>
               </CTable>
+              <ReactPaginate
+              previousLabel={"<<"}
+              nextLabel={">>"}
+              pageCount={10}
+              breakLabel="..."
+              marginPagesDisplayed={3}
+              pageRangeDisplayed={3}
+              onPageChange={handlePageClick}
+              containerClassName={'pagination justify-content-center'}
+              pageClassName={'page-item'}
+              pageLinkClassName={'page-link'}
+              previousClassName={'page-item'}
+              previousLinkClassName={'page-link'}
+              nextClassName={'page-item'}
+              nextLinkClassName={'page-link'}
+              breakClassName={'page-item'}
+              breakLinkClassName={'page-link'}
+              activeClassName={'active'}
+              />
           </CCardBody>
         </CCard>
       </CCol>            

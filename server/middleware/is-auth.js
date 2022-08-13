@@ -1,15 +1,3 @@
-// module.exports = (req, res, next) => {
-//     const position =req.session.employee.empPosition
-//     // if(position =='hr'){
-//     //     console.log(req.session.employee.empPosition);
-//     //     next();
-//     // }
-//     // else{
-//     //     res.send("you cant access this route");
-//     // }
-
-// };
-
 const checkRole = (roles,position) => (req, res, next) =>{
     console.log("role", req.user.role);
     console.log("position", req.user.empPosition);

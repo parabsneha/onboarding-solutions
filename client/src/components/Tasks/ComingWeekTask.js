@@ -1,12 +1,14 @@
 import React, { useEffect, useState, createRef } from 'react'
 import classNames from 'classnames'
 // import "./MyTasks.css";
+import {FaEye} from 'react-icons/fa'
 import { Link, useParams } from "react-router-dom";
 import {
   CNav,
   CNavItem,
   CNavLink,
   CCard,
+  CTooltip,
   CCardBody,
   CCardHeader,
   CCol,
@@ -92,10 +94,17 @@ const MyTasks = () => {
                          <CTableDataCell colSpan="2" className="cellAction">
      
                            <div className="cellAction">
-                           <Link to={`/task/ViewTask/${task._id}`} style={{ textDecoration: "none" }} className="viewButton">
-                           <CButton 
-                           color="dark"
-                           className="viewButton">View  </CButton>
+                           <Link to={`/task/ViewMyTask/${task.taskid}`} style={{ textDecoration: "none" }} className="viewButton">
+
+                           <CTooltip
+                         content="View"
+                          placement="top"
+                      >
+                      <CButton 
+                           color="none"
+                           className="viewButton"><FaEye/>  </CButton>
+                      </CTooltip>
+                           
                              </Link>
                            </div>
      

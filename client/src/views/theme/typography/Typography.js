@@ -1,6 +1,4 @@
-// import React from 'react'
-// import { CCard, CCardHeader, CCardBody } from '@coreui/react'
-// import { DocsLink } from 'src/components'
+
 import { Route, useNavigate } from "react-router-dom";
 import React, { useState } from 'react'
 import axios from 'axios'
@@ -25,7 +23,6 @@ import CIcon from '@coreui/icons-react'
 import {
   cilImage,
 } from '@coreui/icons'
-import { DocsCallout, DocsExample } from 'src/components'
 import { Image } from 'cloudinary-react'
 
 const Tooltips = () => {
@@ -68,7 +65,7 @@ const Tooltips = () => {
       setState(false);
       console.log(state);
     }
-    if (e.target.name == "empPosition" && e.target.value != "Hr") {
+    if (e.target.name == "empPosition" && e.target.value != "Hr" && e.target.value != "supervisor") {
       setTeamVisibility(true);
     } else {
       setTeamVisibility(false);
@@ -145,7 +142,7 @@ const Tooltips = () => {
          console.log("data json", data);
         const serverResponse = await axios.post("http://localhost:3003/admin/add-employee", data);
         console.log(serverResponse.data);
-         await navigate("/theme/colors");
+         await navigate("/allUsers/user");
       }
       else {
         alert("passwords dont match");
@@ -170,11 +167,11 @@ const Tooltips = () => {
             <CRow>
               <CCol md={4} style={{ marginTop: "16px" }}>
                 <CFormLabel htmlFor="validationTooltip01">First Name</CFormLabel>
-                <CFormInput type="text" id="validationTooltip05" name="empFirstName" value={empFirstName} required onChange={e => onInputChange(e)} />
+                <CFormInput type="text" id="validationTooltip01" name="empFirstName" value={empFirstName} required onChange={e => onInputChange(e)} />
               </CCol>
               <CCol md={4} style={{ marginTop: "16px" }}>
                 <CFormLabel htmlFor="validationTooltip02">Last Name</CFormLabel>
-                <CFormInput type="text" id="validationTooltip05" name="empLastName" value={empLastName} required onChange={e => onInputChange(e)} />
+                <CFormInput type="text" id="validationTooltip02" name="empLastName" value={empLastName} required onChange={e => onInputChange(e)} />
               </CCol>
               <CCol>
                 <img
@@ -203,40 +200,40 @@ const Tooltips = () => {
             </CRow>
             <CRow>
               <CCol md={8}>
-                <CFormLabel htmlFor="validationTooltip02">Email</CFormLabel>
+                <CFormLabel htmlFor="validationTooltip03">Email</CFormLabel>
                 <CInputGroup className="mb-3 has-validation">
-                  <CFormInput type="email" id="validationTooltip02" name="empEmail" value={empEmail} required onChange={e => onInputChange(e)} />
+                  <CFormInput type="email" id="validationTooltip03" name="empEmail" value={empEmail} required onChange={e => onInputChange(e)} />
                   <CInputGroupText id="basic-addon2">@example.com</CInputGroupText>
                 </CInputGroup>
               </CCol>
             </CRow>
             <CRow>
               <CCol md={4} className="position-relative">
-                <CFormLabel htmlFor="validationTooltip03">Password</CFormLabel>
-                <CFormInput type="password" id="validationTooltip03" name="empPassword" value={empPassword} required onChange={e => onInputChange(e)} />
+                <CFormLabel htmlFor="validationTooltip04">Password</CFormLabel>
+                <CFormInput type="password" id="validationTooltip04" name="empPassword" value={empPassword} required onChange={e => onInputChange(e)} />
               </CCol>
               <CCol md={4} className="position-relative">
-                <CFormLabel htmlFor="validationTooltip04">Confirm Password</CFormLabel>
-                <CFormInput type="password" id="validationTooltip04" name="empConfirmPass" value={empConfirmPass} required onChange={e => onInputChange(e)} />
+                <CFormLabel htmlFor="validationTooltip05">Confirm Password</CFormLabel>
+                <CFormInput type="password" id="validationTooltip05" name="empConfirmPass" value={empConfirmPass} required onChange={e => onInputChange(e)} />
               </CCol>
             </CRow>
             <CRow>
               <CCol md={4} className="position-relative">
-                <CFormLabel htmlFor="validationTooltip10">Contact No.</CFormLabel>
-                <CFormInput type="text" id="validationTooltip10" name="empContactNum" value={empContactNum} required onChange={e => onInputChange(e)} />
+                <CFormLabel htmlFor="validationTooltip06">Contact No.</CFormLabel>
+                <CFormInput type="text" id="validationTooltip06" name="empContactNum" value={empContactNum} required onChange={e => onInputChange(e)} />
               </CCol>
             </CRow>
             <br />
             <CRow>
               <CCol>
-                <CFormLabel >Gender</CFormLabel>
+                <CFormLabel>Gender</CFormLabel>
                 <CFormCheck style={{ marginLeft: "10px" }}
                   type="radio"
                   name="gender"
                   value="female"
                   id="flexRadioDefault1"
                   label="Female"
-                  defaultChecked
+                  // defaultChecked
                   onChange={e => onInputChange(e)}
                 />
                 <CFormCheck style={{ marginLeft: "10px" }}
@@ -259,7 +256,7 @@ const Tooltips = () => {
                   value="admin"
                   id="flexRadioDefault1"
                   label="admin"
-                  defaultChecked
+                  // defaultChecked
                   onChange={e => onInputChange(e)}
                 />
                 <CFormCheck style={{ marginLeft: "10px" }}
@@ -285,6 +282,7 @@ const Tooltips = () => {
                     <option value="Developer">Developer</option>
                     <option value="QA">QA</option>
                     <option value="Hr">HR</option>
+                    <option value="supervisor">Supervisor</option>
                   </CFormSelect>
                 </CCol>
               </CRow>

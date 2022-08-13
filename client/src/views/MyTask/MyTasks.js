@@ -1,12 +1,14 @@
 import React, { useEffect, useState, createRef } from 'react'
 import classNames from 'classnames'
 // import "./MyTasks.css";
+import {FaEye} from 'react-icons/fa'
 import { Link, useParams } from "react-router-dom";
 import {
   CNav,
   CNavItem,
   CNavLink,
   CCard,
+  CTooltip,
   CCardBody,
   CCardHeader,
   CCol,
@@ -107,16 +109,16 @@ const MyTasks = () => {
              {/* style={{margin : '10px', padding:"10px"}}  */}
              <CRow>
              <CCol className="d-grid gap-2">
-        <CButton onClick={() => setAlltrue()} color="secondary" variant="outline">All</CButton>
+        <CButton onClick={() => setAlltrue()} color="secondary" variant="outline" style={{ marginTop: "10px", marginLeft:"10px" }}>All</CButton>
         </CCol>
         <CCol className="d-grid gap-2">
-        <CButton onClick={() => setDaytrue()} color="secondary" variant="outline">Today</CButton>
+        <CButton onClick={() => setDaytrue()} color="secondary" variant="outline" style={{ marginTop: "10px" }}>Today</CButton>
         </CCol>
         <CCol className="d-grid gap-2">
-        <CButton onClick={() => setWeektrue()} color="secondary" variant="outline">Coming Week</CButton>
+        <CButton onClick={() => setWeektrue()} color="secondary" variant="outline" style={{ marginTop: "10px" }}>Coming Week</CButton>
         </CCol>
         <CCol className="d-grid gap-2">
-        <CButton onClick={() => setMonthtrue()} color="secondary" variant="outline">Coming Month</CButton>
+        <CButton onClick={() => setMonthtrue()} color="secondary" variant="outline" style={{ marginTop: "10px" ,marginRight:"10px"}}>Coming Month</CButton>
         </CCol>
         </CRow>
         { ComingWeek ? <ComingWeekTask/>          
@@ -145,7 +147,7 @@ const MyTasks = () => {
                        </CTableRow>
                      </CTableHead>
                      <CTableBody>
-                     {allTasks.length>0 ? allTasks.map((task, index) => (
+                     { allTasks.length>0 ? allTasks.map((task, index) => (
                        <CTableRow>
                          <CTableHeaderCell scope="row">{index + 1}</CTableHeaderCell>
                          <CTableDataCell colSpan="2">{task.topic}</CTableDataCell>
@@ -156,10 +158,17 @@ const MyTasks = () => {
                          <CTableDataCell colSpan="2" className="cellAction">
      
                            <div className="cellAction">
-                           <Link to={`/task/ViewTask/${task._id}`} style={{ textDecoration: "none" }} className="viewButton">
-                           <CButton 
-                           color="dark"
-                           className="viewButton">View  </CButton>
+                           <Link to={`/task/ViewMyTask/${task.task_id}`} style={{ textDecoration: "none" }} className="viewButton">
+
+                           <CTooltip
+                         content="View"
+                          placement="top"
+                      >
+                      <CButton 
+                           color="none"
+                           className="viewButton"><FaEye/>  </CButton>
+                      </CTooltip>
+                           
                              </Link>
                            </div>
      

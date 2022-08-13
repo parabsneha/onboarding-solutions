@@ -11,7 +11,7 @@ const taskSchema = new mongoose.Schema({
         type: String
     },//
     category:{
-        type:String //hr or admin or IT .
+        type:String //hr or admin or IT.
     },
     personResponsible:{ 
         type: mongoose.Schema.Types.ObjectId, refPath: 'category'

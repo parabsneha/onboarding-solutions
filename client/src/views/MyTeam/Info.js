@@ -11,6 +11,7 @@ import UserCard from "../../components/UseCards";
 // ReactDOM.render(<Info />, rootElement)
 
 function Info() {
+  
   return (
     
     <div className="App">

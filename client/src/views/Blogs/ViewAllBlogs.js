@@ -1,8 +1,12 @@
-import PropTypes from 'prop-types'
-import React, { useEffect, useState, createRef } from 'react'
-import classNames from 'classnames'
-// import "./task.css";
-import {Link} from 'react-router-dom'
+import React, { useEffect, useState, createRef, Component } from 'react'
+import LandingNav from '../pages/landing/LandingNav';
+import "./Like.scss";
+import "./Blog.css";
+import "./post.css";
+import "./posts.css";
+import { Image } from 'cloudinary-react'
+import {FaHeart, FaHeartBroken, FaHeartbeat,FaRegHeart,FaGrinHearts,FaThumbsDown, FaThumbsUp, FaThumbtack} from 'react-icons/fa'
+// FaHeart, FaHeartBroken, FaHeartbeat,FaRegHeart,FaGrinHearts,FaThumbsDown, FaThumbsUp, FaThumbtack
 import {
   CButton,
   CCard,
@@ -23,144 +27,108 @@ import {
   CCol,
   CRow,
 } from '@coreui/react'
+import CIcon from '@coreui/icons-react'
+import {
+  cibCcAmex,
+  cibCcApplePay,
+  cibCcMastercard,
+  cibCcPaypal,
+  cibCcStripe,
+  cibCcVisa,
+  cibGoogle,
+  cibFacebook,
+  cibLinkedin,
+  cifBr,
+  cifEs,
+  cifFr,
+  cifIn,
+  cifPl,
+  cifUs,
+  cibTwitter,
+  cilCloudDownload,
+  cilPeople,
+  cilUser,
+  cilUserFemale,
+  cilThumbUp
+} from '@coreui/icons'
 import ReactImg from 'src/assets/images/react.jpg'
 
 import jwt_decode from "jwt-decode";
 import axios from "axios";
 
-
+const particleList = Array.from(Array(10));
 const ViewAllBlogs = () => {
 
-  const [tasks, setTasks] = useState([]);
-  
-    // console.log("in dashboard 2");
-    let token_task;
-    var employee;
-    var token;
-    useEffect(()=>{
-      token = localStorage.getItem("token");
-      console.log("token ",token);
-      if(token){
-        var decoded = jwt_decode(token);
-        token_task = decoded.task_id;
-        // console.log("token id == ", token_task);
-      }
-  
-      var config = {
-        method: 'post',
-        url: 'http://localhost:3003/admin/getAllTasks',
-        headers: { 
-          'Authorization': `${token}`
-        }
-      };
-      
-      axios(config)
-      .then(function (response) {
-        setTasks(response.data);
-        employee = response.data;
-        console.log("= ", employee);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-      
-    },[]);
 
-	  const handleDelete = async (id) => {
+  const [likes, setLikes] = useState(0);
+  const [liked, setLiked] = useState(null);
+  const [clicked, setClicked] = useState(false);
 
-      if((window.confirm("Delete the item?"))){
-      await axios.post(`http://localhost:3003/admin/delete-employee/${id}`);
-      await alert("task deleted ", id);
-      await window.location.reload();
-      }
-      
+  const [count, setCount] = useState(0);
+  console.log(count);
+  var token = localStorage.getItem("token");
+  const [posts, setpost] = useState([]);
+  
+  useEffect(()=>{
+    var config = {
+      method: 'post',
+      url: 'http://localhost:3003/admin/fetchBlog',
     };
+    
+    axios(config)
+    .then(function (response) {
+      setpost(response.data.reverse());      
+      console.log("response from blog = ", response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+    
+  },[]);
+
+  // const submitLike = (id) =>{
+  //   console.log("id ", id);
+  //   var config = {
+  //     method: 'post',
+  //     url: `http://localhost:3003/employee/submitLike/${id}`,
+  //     headers: { 
+  //       'Authorization': `${token}`
+  //     }
+  //   };
+    
+  //   axios(config)
+  //   .then(function (response) {
+  //     console.log("response from blog = ", response.data.likes);
+  //   })
+  //   .catch(function (error) {
+  //     console.log(error);
+  //   });
+  // }
+
   return (
     <>
-      <CCard className="mb-4">
-        <CCardHeader>
-         All Tasks
-        </CCardHeader>
-        <CCardBody>
-          <CRow>
-          <CCol xs={12}>
-        <CCard className="mb-4">
-          <CCardBody>
-          {/* <DocsExample href="components/card/#grid-cards"> */}
-              <CRow xs={{ cols: 1, gutter: 4 }} md={{ cols: 3 }}>
-                <CCol xs>
-                  <CCard>
-                    <CCardImage orientation="top" src={ReactImg} />
-                    <CCardBody>
-                      <CCardTitle>Card title</CCardTitle>
-                      <CCardText>
-                        This is a wider card with supporting text below as a natural lead-in to
-                        additional content. This content is a little bit longer.
-                      </CCardText>
-                    </CCardBody>
-                    <CCardFooter>
-                      <small className="text-medium-emphasis">Last updated 3 mins ago</small>
-                    </CCardFooter>
-                  </CCard>
-                </CCol>
-                <CCol xs>
-                  <CCard>
-                    <CCardImage orientation="top" src={ReactImg} />
-                    <CCardBody>
-                      <CCardTitle>Card title</CCardTitle>
-                      <CCardText>
-                        This is a wider card with supporting text below as a natural lead-in to
-                        additional content. This content is a little bit longer.
-                      </CCardText>
-                    </CCardBody>
-                    <CCardFooter>
-                      <small className="text-medium-emphasis">Last updated 3 mins ago</small>
-                    </CCardFooter>
-                  </CCard>
-                </CCol>
-                <CCol xs>
-                  <CCard>
-                    <CCardImage orientation="top" src={ReactImg} />
-                    <CCardBody>
-                      <CCardTitle>Card title</CCardTitle>
-                      <CCardText>
-                        This is a wider card with supporting text below as a natural lead-in to
-                        additional content. This content is a little bit longer.
-                      </CCardText>
-                    </CCardBody>
-                    <CCardFooter>
-                      <small className="text-medium-emphasis">Last updated 3 mins ago</small>
-                    </CCardFooter>
-                  </CCard>
-                </CCol>
-                <CCol xs>
-                  <CCard>
-                    <CCardImage orientation="top" src={ReactImg} />
-                    <CCardBody>
-                      <CCardTitle>Card title</CCardTitle>
-                      <CCardText>
-                        This is a wider card with supporting text below as a natural lead-in to
-                        additional content. This content is a little bit longer.
-                      </CCardText>
-                    </CCardBody>
-                    <CCardFooter>
-                      <small className="text-medium-emphasis">Last updated 3 mins ago</small>
-                    </CCardFooter>
-                  </CCard>
-                </CCol>
-              </CRow>
-            {/* </DocsExample> */}
-              
-
-
-
-
-          </CCardBody>
+      <LandingNav/>       
+        <div className="bg-light min-vh-100 d-flex flex-row align-items-center bg-image" style={{ padding: "20px" }}>
+        <CCard style={{ margin: "auto", width: "50%", padding: "10px" }}>
+        {posts.length>0 ? posts.map((post, index) => (
+          <CCard style={{ marginTop: "20px"}}>
+            <CCardBody style={{padding: "20px"}}>
+              <CCardHeader>
+              {post.description}
+              </CCardHeader>
+              <small style={{float:"right"}}>Posted on: {post.postedAt}</small>
+            </CCardBody>
+            <CCardImage orientation="top"
+              src={post.content} 
+              style={{paddingLeft: "20px", paddingRight: "20px", paddingBottom: "20px"}}             
+            />
+            <CCardFooter>
+                           
+            </CCardFooter>
+          </CCard>
+        )):<p>Nothing to fetch!</p>} 
         </CCard>
-      </CCol>            
-          </CRow>
-        </CCardBody>
-      </CCard>
+      </div>
     </>
   )
 }

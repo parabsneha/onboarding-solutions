@@ -74,12 +74,13 @@ const Toasts = () => {
                     focusable="false"
                     role="img"
                   >
-                    <rect width="100%" height="100%" fill="#007aff"></rect>
+                  <rect width="100%" height="100%" fill="#007aff"></rect>
                   </svg>
                   <strong className="me-auto">CoreUI for React.js</strong>
                   <small>7 min ago</small>
                 </CToastHeader>
                 <CToastBody>Hello, world! This is a toast message.</CToastBody>
+                <CButton color="primary">delete</CButton>
               </CToast>
             </DocsExample>
             <DocsExample href="components/toast">{ExampleToast()}</DocsExample>
